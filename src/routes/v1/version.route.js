@@ -1,17 +1,21 @@
 const express = require('express');
-// const auth = require('../../middlewares/auth');
-// const validate = require('../../middlewares/validate');
+const auth = require('../../middlewares/auth');
+const validate = require('../../middlewares/validate');
 const versionController = require('../../controllers/version.controller');
+const versionValidation = require('../../validations/version.validation');
 
 const router = express.Router();
 
-router.route('/').post(versionController.addVersion).get(versionController.getVersions);
+router
+  .route('/')
+  .post(auth('addVersion'), validate(versionValidation.addVersion), versionController.addVersion)
+  .get(validate(versionValidation.getVersions), versionController.getVersions);
 
 router
   .route('/:versionId')
-  .get(versionController.getVersion)
-  .patch(versionController.updateVersion)
-  .delete(versionController.deleteVersion);
+  .get(validate(versionValidation.getVersion), versionController.getVersion)
+  .patch(auth('updateVersion'), validate(versionValidation.updateVersion), versionController.updateVersion)
+  .delete(auth('deleteVersion'), validate(versionValidation.deleteVersion), versionController.deleteVersion);
 
 module.exports = router;
 
@@ -69,7 +73,7 @@ module.exports = router;
  *
  *   get:
  *     summary: Get all versions
- *     description: Only admins can retrieve all versions.
+ *     description: Get all versions
  *     tags: [Versions]
  *     security:
  *       - bearerAuth: []
@@ -155,7 +159,7 @@ module.exports = router;
  *
  *   patch:
  *     summary: Update a version
- *     description: Update a version
+ *     description: Only admins can update a version.
  *     tags: [Versions]
  *     security:
  *       - bearerAuth: []
@@ -202,7 +206,7 @@ module.exports = router;
  *
  *   delete:
  *     summary: Delete a version
- *     description: Delete a version
+ *     description: Only admins can delete a version.
  *     tags: [Versions]
  *     security:
  *       - bearerAuth: []
